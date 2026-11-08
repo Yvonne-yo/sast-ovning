@@ -17,16 +17,17 @@ db.serialize(() => {
 const ADMIN_USER = "admin";
 const ADMIN_PASSWORD = "hemligt123";
 
-// // Sök produkter   -Övningens sårbara kod 2 stycken
-app.get("/search", (req, res) => {
-  const q = req.query.q;
-  const sql = "SELECT * FROM products WHERE name LIKE '%" + q + "%'";
-  db.all(sql, (err, rows) => {
-    if (err) return res.status(500).send("Fel");
-    // Visar sökordet direkt på sidan
-    res.send("<h1>Resultat för " + q + "</h1>" + JSON.stringify(rows));
-  });
-});
+// // // Sök produkter   -Övningens sårbara kod 2 stycken
+// app.get("/search", (req, res) => {
+//   const q = req.query.q;
+//   const sql = "SELECT * FROM products WHERE name LIKE '%" + q + "%'";
+//   db.all(sql, (err, rows) => {
+//     if (err) return res.status(500).send("Fel");
+//     // Visar sökordet direkt på sidan
+//     res.send("<h1>Resultat för " + q + "</h1>" + JSON.stringify(rows));
+//   });
+// });
+// // Övningens sårbara kod 2 stycken slut
 
 // Rättning av // Sök produkter
 app.get('/search', (req, res) => {
