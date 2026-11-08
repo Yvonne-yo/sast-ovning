@@ -17,7 +17,7 @@ db.serialize(() => {
 const ADMIN_USER = "admin";
 const ADMIN_PASSWORD = "hemligt123";
 
-// Sök produkter
+// // Sök produkter   -Övningens sårbara kod 2 stycken
 app.get("/search", (req, res) => {
   const q = req.query.q;
   const sql = "SELECT * FROM products WHERE name LIKE '%" + q + "%'";
@@ -27,6 +27,32 @@ app.get("/search", (req, res) => {
     res.send("<h1>Resultat för " + q + "</h1>" + JSON.stringify(rows));
   });
 });
+
+// Rättning av // Sök produkter
+app.get('/search', (req, res) => {
+  const q = req.query.q || '';
+  const sql = `SELECT * FROM products WHERE name LIKE ?`;
+  const searchTerm = `%${q}%`;
+
+  db.all(sql, [searchTerm], (err, rows) => {
+    if (err) {
+      return res.status(500).send('Ett fel uppstod vid sökningen.');
+    }
+
+    // Undvik XSS genom att undvika rå HTML eller sanera/escapea q
+    const escapedQ = escapeHtml(q); 
+    res.send(`<h1>Resultat för ${escapedQ}</h1>` + JSON.stringify(rows));
+  });
+});
+// Förklaring
+// Vad som har ändrats och varför:
+// 1. Mot SQL-injektion (Parameterized Queries):
+// 	• Innan: Du satte in q direkt i strängen (SELECT * FROM products WHERE name LIKE % + q + %), vilket låter en angripare köra godtycklig SQL-kod.
+// 	• Efter: Använd frågetecken-platshållare (?) och skicka värdet som en parameter ([searchTerm]). Då behandlar databasen alltid inmatningen som ren data och aldrig som exekverbar kod.
+// 2. Mot XSS (Cross-Site Scripting):
+// 	• Innan: Du skrev ut q direkt i HTML-taggen (<h1>Resultat för + q + </h1>). Om en användare söker efter <script>stöldkod()</script> kommer skriptet att köras i webbläsaren.
+// 	• Efter: Du bör alltid "escapea" eller undvika att skriva ut rå användarindata direkt i HTML (skapa en escapeHtml()-funktion eller använd en mallmotor som automatiskt escapar variabler).
+// Rättning slut
 
 // Pinga en server
 app.get("/ping", (req, res) => {
